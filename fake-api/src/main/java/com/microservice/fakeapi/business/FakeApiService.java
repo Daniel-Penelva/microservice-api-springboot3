@@ -1,7 +1,7 @@
 package com.microservice.fakeapi.business;
 
 import com.microservice.fakeapi.apiv1.dto.ProductsDTO;
-import com.microservice.fakeapi.infraestructure.FakeApiClient;
+import com.microservice.fakeapi.infraestructure.client.FakeApiClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
