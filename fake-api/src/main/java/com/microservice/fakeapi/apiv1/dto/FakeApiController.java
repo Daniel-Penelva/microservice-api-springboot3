@@ -1,6 +1,6 @@
 package com.microservice.fakeapi.apiv1.dto;
 
-import com.microservice.fakeapi.business.FakeApiService;
+import com.microservice.fakeapi.business.service.FakeApiService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
