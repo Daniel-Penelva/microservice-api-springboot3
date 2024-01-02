@@ -23,6 +23,19 @@ public class ProdutoConverter {
                 .build();
     }
 
+    public ProdutoEntity toEntityUpdate(ProdutoEntity entity, ProductsDTO dto, String id) { // Converte de DTO para Entity para ação de atualização
+        return ProdutoEntity.builder()
+                .id(id)
+                .nome(dto.getNome() != null ? dto.getNome() : entity.getNome())
+                .categoria(dto.getCategoria() != null ? dto.getCategoria() : entity.getCategoria())
+                .descricao(dto.getDescricao() != null ? dto.getDescricao() : entity.getDescricao())
+                .preco(dto.getPreco() != null ? dto.getPreco() : entity.getPreco())
+                .imagem(dto.getImagem() != null ? dto.getImagem() : entity.getImagem())
+                .dataInclusao(entity.getDataInclusao())
+                .dataAtualizacao(LocalDateTime.now())
+                .build();
+    }
+
     public ProductsDTO toDTO(ProdutoEntity entity){ // Converte de Entity para DTO
         return ProductsDTO.builder()
                 .entityId(entity.getId())

@@ -39,4 +39,7 @@ public class ProdutoEntity {
 
     @Column(name = "data_inclusao")
     private LocalDateTime dataInclusao;
+
+    @Column(name = "data_atualizacao")
+    private LocalDateTime dataAtualizacao;
 }
