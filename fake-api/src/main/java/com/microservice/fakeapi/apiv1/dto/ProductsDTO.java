@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 public class ProductsDTO {
 
     @JsonProperty(value = "id")
-    @JsonIgnore
+    @JsonIgnore // para o id não aparecer no response do corpo json
     private Long id;
     @JsonProperty(value = "entity_id")
     private String entityId;

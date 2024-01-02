@@ -37,21 +37,21 @@ public class ProdutoService {
         }
     }
 
-    // Listando os produtos da API externa
-    public List<ProdutoEntity> buscarTodosProdutos() {
+    // Buscar produto por nome
+    public ProductsDTO buscarProdutoPorNome(String nome) {
         try {
-            return repository.findAll();
+            return converter.toDTO(repository.findByNome(nome));
         } catch (Exception e) {
-            throw new RuntimeException("Erro ao buscar todos os produtos" + e);
+            throw new RuntimeException(format("Erro ao buscar produto por nome", nome) + e);
         }
     }
 
-    // Buscar produto por nome
-    public ProdutoEntity buscarProdutoPorNome(String nome) {
+    // Buscar todos os produtos DTOs
+    public List<ProductsDTO>  buscarTodosProdutos() {
         try {
-            return repository.findByNome(nome);
+            return converter.toListDTO(repository.findAll());
         } catch (Exception e) {
-            throw new RuntimeException(format("Erro ao buscar produto por nome", nome) + e);
+            throw new RuntimeException(format("Erro ao buscar todos os produto por") + e);
         }
     }
 
