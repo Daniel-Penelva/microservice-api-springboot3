@@ -3,6 +3,7 @@ package com.microservice.fakeapi.business.service;
 import com.microservice.fakeapi.apiv1.dto.ProductsDTO;
 import com.microservice.fakeapi.business.converter.ProdutoConverter;
 import com.microservice.fakeapi.infraestructure.entities.ProdutoEntity;
+import com.microservice.fakeapi.infraestructure.exceptions.BusinessException;
 import com.microservice.fakeapi.infraestructure.repositories.ProdutoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,7 @@ public class ProdutoService {
         try {
             return repository.save(entity);
         } catch (Exception e) {
-            throw new RuntimeException("Erro ao salvar produtos" + e);
+            throw new BusinessException("Erro ao salvar produtos" + e);
         }
     }
 
@@ -33,7 +34,7 @@ public class ProdutoService {
             ProdutoEntity entity = converter.toEntity(dto);
             return converter.toDTO(repository.save(entity));
         } catch (Exception e) {
-            throw new RuntimeException("Erro ao salvar produtos" + e);
+            throw new BusinessException("Erro ao salvar produtos" + e);
         }
     }
 
@@ -42,7 +43,7 @@ public class ProdutoService {
         try {
             return converter.toDTO(repository.findByNome(nome));
         } catch (Exception e) {
-            throw new RuntimeException(format("Erro ao buscar produto por nome", nome) + e);
+            throw new BusinessException(format("Erro ao buscar produto por nome = %s ", nome) + e);
         }
     }
 
@@ -51,7 +52,7 @@ public class ProdutoService {
         try {
             return converter.toListDTO(repository.findAll());
         } catch (Exception e) {
-            throw new RuntimeException(format("Erro ao buscar todos os produto por") + e);
+            throw new BusinessException("Erro ao buscar todos os produto por", e);
         }
     }
 
@@ -60,7 +61,7 @@ public class ProdutoService {
         try {
             repository.deleteByNome(nome);
         } catch (Exception e) {
-            throw new RuntimeException(format("Erro ao deletar produto por nome", nome) + e);
+            throw new BusinessException(format("Erro ao deletar produto por nome = %s ", nome) + e);
         }
     }
 
@@ -69,7 +70,7 @@ public class ProdutoService {
         try {
             return repository.existsByNome(nome);
         } catch (Exception e) {
-            throw new RuntimeException(format("Erro ao buscar produto por nome", nome) + e);
+            throw new BusinessException(format("Erro ao buscar produto por nome = %s ", nome) + e);
         }
     }
 
@@ -80,7 +81,7 @@ public class ProdutoService {
             salvarProdutos(converter.toEntityUpdate(entity, dto, id));
             return converter.toDTO(repository.findByNome(entity.getNome()));
         } catch (Exception e) {
-            throw new RuntimeException(format("Erro ao atualizar o produto"));
+            throw new BusinessException("Erro ao atualizar o produto", e);
         }
     }
 }
