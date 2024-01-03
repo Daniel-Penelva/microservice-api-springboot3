@@ -4,11 +4,14 @@ import com.microservice.fakeapi.apiv1.dto.ProductsDTO;
 import com.microservice.fakeapi.business.converter.ProdutoConverter;
 import com.microservice.fakeapi.infraestructure.entities.ProdutoEntity;
 import com.microservice.fakeapi.infraestructure.exceptions.BusinessException;
+import com.microservice.fakeapi.infraestructure.exceptions.ConflictException;
+import com.microservice.fakeapi.infraestructure.exceptions.UnprocessableEntityException;
 import com.microservice.fakeapi.infraestructure.repositories.ProdutoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 import static java.lang.String.format;
 
@@ -31,8 +34,14 @@ public class ProdutoService {
     // Salvar ProdutoDTO
     public ProductsDTO salvarProdutoDTO(ProductsDTO dto) {
         try {
+            Boolean retorno = existsPorNome(dto.getNome());
+            if (retorno.equals(true)) {
+                throw new ConflictException("Produto já existente no banco de dados {}" + dto.getNome());
+            }
             ProdutoEntity entity = converter.toEntity(dto);
             return converter.toDTO(repository.save(entity));
+        } catch (ConflictException e) {
+            throw new ConflictException(e.getMessage());
         } catch (Exception e) {
             throw new BusinessException("Erro ao salvar produtos" + e);
         }
@@ -41,14 +50,20 @@ public class ProdutoService {
     // Buscar produto por nome
     public ProductsDTO buscarProdutoPorNome(String nome) {
         try {
-            return converter.toDTO(repository.findByNome(nome));
+            ProdutoEntity produto = repository.findByNome(nome);
+            if (Objects.isNull(produto)) {
+                throw new UnprocessableEntityException("Não foram encontrados produtos com o nome {}" + nome);
+            }
+            return converter.toDTO(produto);
+        } catch (UnprocessableEntityException e) {
+            throw new UnprocessableEntityException(e.getMessage());
         } catch (Exception e) {
             throw new BusinessException(format("Erro ao buscar produto por nome = %s ", nome) + e);
         }
     }
 
     // Buscar todos os produtos DTOs
-    public List<ProductsDTO>  buscarTodosProdutos() {
+    public List<ProductsDTO> buscarTodosProdutos() {
         try {
             return converter.toListDTO(repository.findAll());
         } catch (Exception e) {
@@ -59,7 +74,14 @@ public class ProdutoService {
     // Deletar produto por nome
     public void deletarProduto(String nome) {
         try {
-            repository.deleteByNome(nome);
+            Boolean retorno = existsPorNome(nome);
+            if (retorno.equals(false)) {
+                throw new UnprocessableEntityException("Não foi possível deletar o produto, pois não existe produto com o nome {}" + nome);
+            } else {
+                repository.deleteByNome(nome);
+            }
+        } catch (UnprocessableEntityException e) {
+            throw new UnprocessableEntityException(e.getMessage());
         } catch (Exception e) {
             throw new BusinessException(format("Erro ao deletar produto por nome = %s ", nome) + e);
         }
@@ -77,7 +99,7 @@ public class ProdutoService {
     // Atualizar Produto
     public ProductsDTO updateProduto(String id, ProductsDTO dto) {
         try {
-            ProdutoEntity entity = repository.findById(id).orElseThrow(() -> new RuntimeException("Id: " + id + "não existe no banco de dados!"));
+            ProdutoEntity entity = repository.findById(id).orElseThrow(() -> new UnprocessableEntityException("Produto não encontrado na base de dados"));
             salvarProdutos(converter.toEntityUpdate(entity, dto, id));
             return converter.toDTO(repository.findByNome(entity.getNome()));
         } catch (Exception e) {
