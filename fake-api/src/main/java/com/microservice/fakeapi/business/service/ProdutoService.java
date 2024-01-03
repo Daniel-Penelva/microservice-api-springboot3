@@ -36,7 +36,7 @@ public class ProdutoService {
         try {
             Boolean retorno = existsPorNome(dto.getNome());
             if (retorno.equals(true)) {
-                throw new ConflictException("Produto já existente no banco de dados {}" + dto.getNome());
+                throw new ConflictException("Produto já existente no banco de dados" + dto.getNome());
             }
             ProdutoEntity entity = converter.toEntity(dto);
             return converter.toDTO(repository.save(entity));
@@ -52,7 +52,7 @@ public class ProdutoService {
         try {
             ProdutoEntity produto = repository.findByNome(nome);
             if (Objects.isNull(produto)) {
-                throw new UnprocessableEntityException("Não foram encontrados produtos com o nome {}" + nome);
+                throw new UnprocessableEntityException("Não foram encontrados produtos com o nome: " + nome);
             }
             return converter.toDTO(produto);
         } catch (UnprocessableEntityException e) {
@@ -67,7 +67,7 @@ public class ProdutoService {
         try {
             return converter.toListDTO(repository.findAll());
         } catch (Exception e) {
-            throw new BusinessException("Erro ao buscar todos os produto por", e);
+            throw new BusinessException("Erro ao buscar todos os produto por {}", e);
         }
     }
 
@@ -76,7 +76,7 @@ public class ProdutoService {
         try {
             Boolean retorno = existsPorNome(nome);
             if (retorno.equals(false)) {
-                throw new UnprocessableEntityException("Não foi possível deletar o produto, pois não existe produto com o nome {}" + nome);
+                throw new UnprocessableEntityException("Não foi possível deletar o produto, pois não existe produto com o nome: " + nome);
             } else {
                 repository.deleteByNome(nome);
             }
@@ -102,6 +102,8 @@ public class ProdutoService {
             ProdutoEntity entity = repository.findById(id).orElseThrow(() -> new UnprocessableEntityException("Produto não encontrado na base de dados"));
             salvarProdutos(converter.toEntityUpdate(entity, dto, id));
             return converter.toDTO(repository.findByNome(entity.getNome()));
+        } catch (UnprocessableEntityException e) {
+            throw new UnprocessableEntityException(e.getMessage());
         } catch (Exception e) {
             throw new BusinessException("Erro ao atualizar o produto", e);
         }
