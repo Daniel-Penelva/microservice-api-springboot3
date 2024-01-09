@@ -20,10 +20,10 @@ spring:
 topico:
   fake-api:
     consumer:
-      nome: fake-api-consumer-products-v2
+      nome: fake-api-consumer-products-v10
       group-id: javanauta
     producer:
-      nome: fake-api-producer-products-v2
+      nome: fake-api-producer-products-v10
 
 server:
   port: 8181

@@ -6,6 +6,7 @@ import com.microservice.fakeapi.infraestructure.entities.ProdutoEntity;
 import com.microservice.fakeapi.infraestructure.exceptions.BusinessException;
 import com.microservice.fakeapi.infraestructure.exceptions.ConflictException;
 import com.microservice.fakeapi.infraestructure.exceptions.UnprocessableEntityException;
+import com.microservice.fakeapi.infraestructure.message.producer.FakeApiProducer;
 import com.microservice.fakeapi.infraestructure.repositories.ProdutoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ public class ProdutoService {
 
     private final ProdutoRepository repository;
     private final ProdutoConverter converter;
+    private final FakeApiProducer producer;
 
     // Salva os produtos da API Externa no Banco de dados
     public ProdutoEntity salvarProdutos(ProdutoEntity entity) {
@@ -44,6 +46,24 @@ public class ProdutoService {
             throw new ConflictException(e.getMessage());
         } catch (Exception e) {
             throw new BusinessException("Erro ao salvar produtos" + e);
+        }
+    }
+
+    // Salvar Produto Consumer
+    public void salvaProdutoConsumer(ProductsDTO dto) {
+        try {
+            Boolean retorno = existsPorNome(dto.getNome());
+            if (retorno.equals(true)) {
+                producer.enviaRespostaCadastroProdutos("Produto " + dto.getNome() + " já existente no banco de dados.");
+                throw new ConflictException("Produto já existente no banco de dados " + dto.getNome());
+            }
+            repository.save(converter.toEntity(dto));
+            producer.enviaRespostaCadastroProdutos("Produto " + dto.getNome() + " gravado com sucesso.");
+        } catch (ConflictException e) {
+            throw new ConflictException(e.getMessage());
+        } catch (Exception e) {
+            producer.enviaRespostaCadastroProdutos("Erro ao gravar o produto " + dto.getNome());
+            throw new BusinessException("Erro ao salvar Produtos" + e);
         }
     }
 

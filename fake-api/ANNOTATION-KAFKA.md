@@ -10,15 +10,17 @@ Principais conceitos e componentes do Kafka:
 
 1. **Produtores (Producers):** São responsáveis por enviar mensagens para os tópicos do Kafka. Os produtores publicam registros em tópicos.
 
-2. **Tópicos (Topics):** São canais de comunicação aos quais os produtores enviam mensagens e dos quais os consumidores leem mensagens. Os tópicos organizam as mensagens em categorias.
+2. **Tópicos (Topics):** São canais de comunicação aos quais os produtores enviam mensagens e dos quais os consumidores leem mensagens. Os tópicos organizam as mensagens em categorias. Ou seja, um tópico é um identificador. Por meio desse identificador, será possível se conectar ao broker e disparar e receber as mensagens.
 
 3. **Consumidores (Consumers):** São os aplicativos ou processos que se inscrevem nos tópicos e processam as mensagens. Os consumidores consomem registros de tópicos.
 
 4. **ZooKeeper:** O Kafka depende do Apache ZooKeeper para coordenação e gerenciamento de configurações. O ZooKeeper mantém o estado do cluster Kafka e coordena a eleição de líderes para as partições.
 
-5. **Partições (Partitions):** Os tópicos podem ser divididos em partições para permitir a distribuição de carga e escalabilidade. Cada partição é ordenada e pode ser replicada para garantir a durabilidade e a tolerância a falhas.
+5. **Partições (Partitions):** Os tópicos podem ser divididos em partições para permitir a distribuição de carga e escalabilidade. Cada partição é ordenada e pode ser replicada para garantir a durabilidade e a tolerância a falhas. Portanto, partição é subdivisão de um tópico, a partição é um recurso para ajudar a balancear a carga
 
-6. **Brokers:** São os servidores Kafka que armazenam os dados. Cada broker é responsável por uma parte das partições e pode se tornar líder de uma partição específica.
+6. **Brokers:** São os servidores Kafka que armazenam os dados. Cada broker é responsável por uma parte das partições e pode se tornar líder de uma partição específica. Portanto, um brocker é o servidor de envio de mensagens. É ele que irá disparar e receber essas mensagens. O broker também possui os tópicos e as partições.
+
+7. **Cluster:** Resumidamente, um cluster é um conjunto de brokers, nele serão contidos os servidores e a instância principal do Kafka.
 
 O Kafka é amplamente utilizado em cenários como análise em tempo real, processamento de eventos, integração de sistemas distribuídos e log de registros. Sua arquitetura distribuída e capacidade de lidar com grandes volumes de dados em tempo real o tornam uma escolha popular para empresas que precisam de uma plataforma robusta para streaming de dados.
 
