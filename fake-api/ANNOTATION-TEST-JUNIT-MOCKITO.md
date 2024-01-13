@@ -882,5 +882,137 @@ Analisando cada um dos métodos de teste no script `ProdutoConverterTeste`:
 Em resumo, esses testes garantem que as operações de conversão no `ProdutoConverter` funcionem conforme o esperado, cobrindo cenários como criação de entidade, atualização de entidade, conversão para DTO e conversão de lista de entidades para lista de DTO. As asserções são usadas para verificar se os resultados da conversão são consistentes com as expectativas definidas nos objetos esperados.
 
 ---
+# classe de Teste `FakeApiServiceTest`
+
+1. **Anotações no início da classe:**
+   ```java
+   @ExtendWith(MockitoExtension.class)
+   public class FakeApiServiceTest {
+   ```
+
+   - `@ExtendWith(MockitoExtension.class)`: Indica que a extensão do Mockito deve ser usada para executar os testes. Isso é específico para o JUnit 5.
+
+2. **Declaração dos Mocks e do serviço sob teste:**
+   ```java
+   @InjectMocks
+   FakeApiService service;
+
+   @Mock
+   FakeApiClient client;
+   @Mock
+   ProdutoConverter converter;
+   @Mock
+   ProdutoService produtoService;
+   ```
+
+   - `@InjectMocks`: Cria uma instância da classe sob teste (`FakeApiService`) e injeta os mocks nas dependências declaradas com `@Mock`.
+   - `@Mock`: Cria mocks para as dependências da classe sob teste.
+
+3. **Método `testeBuscarProdutosEGravarComSucesso()`**
+```java
+   @Test
+    void testeBuscarProdutosEGravarComSucesso() {
+
+        List<ProductsDTO> listaProdutosDTO = new ArrayList<>();
+
+        ProductsDTO produtoDTO = ProductsDTO.builder()
+                .entityId("1245").nome("Jaqueta Vermelha")
+                .categoria("Roupas")
+                .descricao("Jaqueta Vermelha com bolsos laterais e Listras")
+                .preco(new BigDecimal(250.00))
+                .build();
+
+        listaProdutosDTO.add(produtoDTO);
+
+        ProdutoEntity produtoEntity = ProdutoEntity.builder()
+                .id("1245")
+                .nome("Jaqueta Vermelha")
+                .categoria("Roupas")
+                .descricao("Jaqueta Vermelha com bolsos laterais e Listras")
+                .preco(new BigDecimal(250.00))
+                .build();
+
+        when(client.buscaListaProdutos()).thenReturn(listaProdutosDTO);
+        when(produtoService.existsPorNome(produtoDTO.getNome())).thenReturn(false);
+        when(converter.toEntity(produtoDTO)).thenReturn(produtoEntity);
+        when(produtoService.salvarProdutos(produtoEntity)).thenReturn(produtoEntity);
+        when(produtoService.buscarTodosProdutos()).thenReturn(listaProdutosDTO);
+
+        List<ProductsDTO> listaProdutosDTORetorno = service.buscarProdutos();
+
+        assertEquals(listaProdutosDTO, listaProdutosDTORetorno);
+        verify(client).buscaListaProdutos();
+        verify(produtoService).existsPorNome(produtoDTO.getNome());
+        verify(converter).toEntity(produtoDTO);
+        verify(produtoService).salvarProdutos(produtoEntity);
+        verify(produtoService).buscarTodosProdutos();
+        verifyNoMoreInteractions(client, produtoService, converter);
+    }
+```
+
+   - Este método testa o cenário em que a busca de produtos é bem-sucedida, e nenhum produto com o mesmo nome já existe no banco de dados.
+   - Usa o método `when` para configurar comportamentos nos mocks.
+   - Usa o método `assertEquals` para verificar se o resultado do método sob teste é o esperado.
+   - Usa o método `verify` para garantir que os métodos nos mocks foram chamados conforme o esperado.
+
+4. **Método `testeBuscarProdutosENaoGravarCasoRetornoTrue()`**
+```java
+@Test
+    void testeBuscarProdutosENaoGravarCasoRetornoTrue() {
+
+            List<ProductsDTO> listaProdutosDTO = new ArrayList<>();
+
+        ProductsDTO produtoDTO = ProductsDTO.builder()
+        .entityId("1245")
+        .nome("Jaqueta Vermelha")
+        .categoria("Roupas")
+        .descricao("Jaqueta Vermelha com bolsos laterais e Listras")
+        .preco(new BigDecimal(250.00))
+        .build();
+
+        listaProdutosDTO.add(produtoDTO);
+
+        when(client.buscaListaProdutos()).thenReturn(listaProdutosDTO);
+        when(produtoService.existsPorNome(produtoDTO.getNome())).thenReturn(true);
+
+        ConflictException e = assertThrows(ConflictException.class, () -> service.buscarProdutos());
+        System.out.println("Mensagem real da exceção: " + e.getMessage());
+
+        assertThat(e.getMessage(), containsString("Produto já existente no banco de dados"));
+        assertThat(e.getMessage(), containsString("Jaqueta Vermelha"));
+
+        verify(client).buscaListaProdutos();
+        verify(produtoService).existsPorNome(produtoDTO.getNome());
+        verifyNoMoreInteractions(client, produtoService);
+        verifyNoInteractions(converter);
+    }
+```
+
+   - Testa o cenário em que a busca de produtos retorna um produto já existente no banco de dados.
+   - Usa o método `assertThrows` para verificar se a exceção esperada (`ConflictException`) é lançada.
+   - Usa o método `verify` para garantir que os métodos nos mocks foram chamados conforme o esperado.
+
+5. **Método `testeGerarExceptionCasoErroAoBuscarProdutosViaClient()`**
+```java
+    @Test
+    void testeGerarExceptionCasoErroAoBuscarProdutosViaClient() {
+
+            when(client.buscaListaProdutos()).thenThrow(new RuntimeException("Erro ao buscar Lista de Produtos"));
+
+            assertThrows(RuntimeException.class, () -> service.buscarProdutos());
+
+        verify(client).buscaListaProdutos();
+        verifyNoMoreInteractions(client);
+        verifyNoInteractions(converter, produtoService);
+        }
+```
+
+   - Testa o cenário em que ocorre uma exceção ao buscar produtos no cliente (`client`).
+   - Usa o método `assertThrows` para verificar se a exceção esperada (`RuntimeException`) é lançada.
+   - Usa o método `verify` para garantir que os métodos nos mocks foram chamados conforme o esperado.
+
+Essencialmente, esses métodos de teste são usados para garantir que a classe `FakeApiService` funciona conforme esperado em diferentes cenários. Eles são uma parte importante da prática de Desenvolvimento Orientado a Testes (TDD) e ajudam a garantir que o código seja robusto e confiável.
+
+---
 # Autor
 ## Feito por: `Daniel Penelva de Andrade`
