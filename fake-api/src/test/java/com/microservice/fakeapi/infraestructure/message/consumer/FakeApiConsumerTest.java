@@ -1,4 +1,4 @@
-package com.microservice.fakeapi.infraestructure.consumer;
+package com.microservice.fakeapi.infraestructure.message.consumer;
 
 import com.microservice.fakeapi.apiv1.dto.ProductsDTO;
 import com.microservice.fakeapi.business.service.ProdutoService;

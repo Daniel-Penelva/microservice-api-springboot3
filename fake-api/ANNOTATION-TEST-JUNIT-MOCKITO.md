@@ -1098,5 +1098,82 @@ Em resumo, esse método de teste verifica se o consumidor (`consumer`) interage 
 Em resumo, esse método de teste verifica se o consumidor (`consumer`) lida corretamente com uma situação em que o serviço (`service`) lança uma exceção durante a execução. Ele valida se a exceção gerada é a esperada (`BusinessException`) e se as interações com o serviço ocorrem conforme o esperado. Esse tipo de teste é importante para garantir que o consumidor se comporte corretamente em resposta a falhas no serviço.
 
 ---
+
+# classe de Teste `FakeApiProducerTest`
+
+```java
+package com.microservice.fakeapi.infraestructure.message.producer;
+
+import com.microservice.fakeapi.infraestructure.exceptions.BusinessException;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.kafka.core.KafkaTemplate;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+public class FakeApiProducerTest {
+
+    @InjectMocks
+    FakeApiProducer producer;
+
+    @Captor
+    private ArgumentCaptor<String> messageCaptor;
+
+    @Mock
+    private KafkaTemplate<String, String> kafkaTemplate;
+
+    @Test
+    void testeEnviarRespostaCadastroProdutosComSucesso(){
+        String mensagem = "Produto cadastro com sucesso";
+
+        producer.enviaRespostaCadastroProdutos(mensagem);
+
+        verify(kafkaTemplate).send(any(), messageCaptor.capture());
+        assertEquals(mensagem, messageCaptor.getValue());
+    }
+
+    @Test
+    void testeRetornarExceptionCasoOcorraErroNaProducaoDaMensagem(){
+        doThrow(new RuntimeException("Erro ao produzir mensagem")).when(kafkaTemplate).send(any(), any());
+
+        BusinessException e = assertThrows(BusinessException.class, () -> producer.enviaRespostaCadastroProdutos(null));
+
+        assertThat(e.getMessage(), is("Erro ao produzir mensagem do kafka"));
+        verifyNoMoreInteractions(kafkaTemplate);
+    }
+}
+```
+
+Analisando os métodos de testes passo a passo:
+
+1. **Método `testeEnviarRespostaCadastroProdutosComSucesso()`:**
+
+   - Cria uma mensagem de sucesso e a envia usando o método `enviaRespostaCadastroProdutos` do objeto `producer`. Este método é responsável por enviar a mensagem para um tópico Kafka.
+   - Utiliza o método `verify` para assegurar que o método `send` do `kafkaTemplate` foi chamado. O `any()` indica que qualquer argumento pode ser passado para o método. O `messageCaptor.capture()` captura o argumento passado para o método para posterior análise.
+   - Usa o método `getValue()` do `messageCaptor` para recuperar a mensagem que foi passada para o método `send` do `kafkaTemplate`. A mensagem capturada é então comparada com a mensagem original para garantir que corresponde ao esperado.
+
+Em resumo, esse método de teste verifica se o produtor (`producer`) está enviando corretamente a mensagem esperada para o tópico Kafka usando o `kafkaTemplate`. O uso do `verify` e do `messageCaptor` ajuda a garantir que a interação com o Kafka seja realizada conforme o esperado e permite a verificação precisa dos dados enviados. Esse tipo de teste é crucial para garantir a integridade da comunicação entre o produtor e o Kafka, especialmente em casos de respostas ou eventos.
+
+2. **Método `testeEnviarRespostaCadastroProdutosComSucesso()`:**
+
+   - Utiliza o `doThrow` do Mockito para configurar o comportamento do `kafkaTemplate`. Neste caso, está configurado para lançar uma exceção do tipo `RuntimeException` com a mensagem "Erro ao produzir mensagem" sempre que o método `send` for chamado.
+   - Chama o método `enviaRespostaCadastroProdutos` do objeto `producer` passando `null` como argumento. Este método, ao tentar produzir a mensagem no Kafka, deve lançar a exceção configurada anteriormente.
+   - Utiliza o método `assertThat` para verificar se a exceção capturada (`BusinessException`) possui a mensagem esperada, que é "Erro ao produzir mensagem do kafka".
+   - Usa o `verifyNoMoreInteractions` para garantir que não ocorram mais interações com o `kafkaTemplate` após a exceção ser lançada. Isso é importante para assegurar que o método `send` seja chamado apenas uma vez.
+
+Em resumo, este teste verifica se o produtor (`producer`) trata corretamente a exceção lançada durante a produção da mensagem no Kafka, e se não há interações adicionais com o `kafkaTemplate` após a exceção. Esse tipo de teste é valioso para garantir que o sistema reaja adequadamente a cenários de falha durante a comunicação com o Kafka.
+
+---
 # Autor
 ## Feito por: `Daniel Penelva de Andrade`
