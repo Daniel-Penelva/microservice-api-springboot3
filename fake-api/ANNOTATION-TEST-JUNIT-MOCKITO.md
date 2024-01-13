@@ -695,5 +695,192 @@ Em resumo, este método de teste verifica se a `FakeApiController` interage corr
 Em resumo, este script de teste utiliza o Mockito e o MockMvc para verificar se as operações na `FakeApiController` interagem corretamente com os meus serviços (`FakeApiService` e `ProdutoService`) e se as respostas HTTP estão de acordo com o esperado em diferentes cenários.
 
 ---
+
+# classe de Teste `ProdutoConverterTeste`
+
+```java
+package com.microservice.fakeapi.business.converter;
+
+import com.microservice.fakeapi.apiv1.dto.ProductsDTO;
+import com.microservice.fakeapi.infraestructure.entities.ProdutoEntity;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@ExtendWith(MockitoExtension.class)
+public class ProdutoConverterTeste {
+
+    @InjectMocks
+    ProdutoConverter converter;
+
+    @Test
+    void testeConverterParaProdutoEntityComSucesso(){
+
+       ProductsDTO productsDTO = ProductsDTO.builder()
+                .nome("Jaqueta Vermelha")
+                .categoria("Roupas")
+                .descricao("Jaqueta Vermelha com bolso")
+                .preco(new BigDecimal(500.00))
+                .build();
+
+        ProdutoEntity produtoEntityEsperado = ProdutoEntity.builder()
+                .id("12345")
+                .nome("Jaqueta Vermelha")
+                .categoria("Roupas")
+                .descricao("Jaqueta Vermelha com bolso")
+                .preco(new BigDecimal(500.00))
+                .build();
+
+        ProdutoEntity produtoEntity = converter.toEntity(productsDTO);
+
+        assertEquals(produtoEntityEsperado.getNome(), produtoEntity.getNome());
+        assertEquals(produtoEntityEsperado.getCategoria(), produtoEntity.getCategoria());
+        assertEquals(produtoEntityEsperado.getDescricao(), produtoEntity.getDescricao());
+        assertEquals(produtoEntityEsperado.getPreco(), produtoEntity.getPreco());
+        assertEquals(produtoEntityEsperado.getImagem(), produtoEntity.getImagem());
+
+        assertNotNull(produtoEntity.getId());
+        assertNotNull(produtoEntity.getDataInclusao());
+    }
+
+    @Test
+    void testeConverterParaProdutoEntityUpdateComSucesso(){
+
+        ProductsDTO productsDTO = ProductsDTO.builder()
+                //.nome("Jaqueta Vermelha")  não vou alterar o nome, logo não precisa passar
+                //.categoria("Roupas") não vou alterar a categoria, logo não precisa passar
+                .descricao("Jaqueta Vermelha com bolso e listas azuis")
+                .preco(new BigDecimal(250.00))
+                .build();
+
+        ProdutoEntity produtoEntityEsperado = ProdutoEntity.builder()
+                .id("12345")
+                .nome("Jaqueta Vermelha")
+                .categoria("Roupas")
+                .descricao("Jaqueta Vermelha com bolso e listas azuis")
+                .preco(new BigDecimal(250.00))
+                .build();
+
+        String id = "12345";
+
+        ProdutoEntity entity = ProdutoEntity.builder()
+                .id("12345")
+                .nome("Jaqueta Vermelha")
+                .categoria("Roupas")
+                .descricao("Jaqueta Vermelha com bolso")
+                .preco(new BigDecimal(500.00))
+                .build();
+
+        ProdutoEntity produtoEntity = converter.toEntityUpdate(entity, productsDTO, id);
+
+        assertEquals(produtoEntityEsperado.getNome(), produtoEntity.getNome());
+        assertEquals(produtoEntityEsperado.getCategoria(), produtoEntity.getCategoria());
+        assertEquals(produtoEntityEsperado.getDescricao(), produtoEntity.getDescricao());
+        assertEquals(produtoEntityEsperado.getPreco(), produtoEntity.getPreco());
+        assertEquals(produtoEntityEsperado.getImagem(), produtoEntity.getImagem());
+        assertEquals(produtoEntityEsperado.getId(), produtoEntity.getId());
+        assertEquals(produtoEntityEsperado.getDataInclusao(), produtoEntity.getDataInclusao());
+
+        assertNotNull(produtoEntity.getDataAtualizacao());
+    }
+
+    @Test
+    void testeConverterParaProdutoDtoComSucesso(){
+
+        ProdutoEntity produtoEntity = ProdutoEntity.builder()
+                .id("12345")
+                .nome("Jaqueta Vermelha")
+                .categoria("Roupas")
+                .descricao("Jaqueta Vermelha com bolso")
+                .preco(new BigDecimal(500.00))
+                .build();
+
+        ProductsDTO productsDTOEsperado = ProductsDTO.builder()
+                .nome("Jaqueta Vermelha")
+                .categoria("Roupas")
+                .descricao("Jaqueta Vermelha com bolso")
+                .preco(new BigDecimal(500.00))
+                .build();
+
+        ProductsDTO produtodto = converter.toDTO(produtoEntity);
+
+        assertEquals(productsDTOEsperado.getNome(), produtoEntity.getNome());
+        assertEquals(productsDTOEsperado.getCategoria(), produtoEntity.getCategoria());
+        assertEquals(productsDTOEsperado.getDescricao(), produtoEntity.getDescricao());
+        assertEquals(productsDTOEsperado.getPreco(), produtoEntity.getPreco());
+        assertEquals(productsDTOEsperado.getImagem(), produtoEntity.getImagem());
+
+        assertNull(productsDTOEsperado.getId());
+        assertNotNull(produtoEntity.getId());
+    }
+
+    @Test
+    void testeConverterParaListaProdutoDtoComSucesso(){
+
+        List<ProductsDTO> listaProdutosDto = new ArrayList<>();
+        List<ProdutoEntity> listaProdutosEntity = new ArrayList<>();
+
+        ProdutoEntity produtoEntity = ProdutoEntity.builder()
+                .id("12345")
+                .nome("Jaqueta Vermelha")
+                .categoria("Roupas")
+                .descricao("Jaqueta Vermelha com bolso")
+                .preco(new BigDecimal(500.00))
+                .build();
+
+        ProductsDTO productsDTO = ProductsDTO.builder()
+                .entityId("12345")
+                .nome("Jaqueta Vermelha")
+                .categoria("Roupas")
+                .descricao("Jaqueta Vermelha com bolso")
+                .preco(new BigDecimal(500.00))
+                .build();
+
+        listaProdutosDto.add(productsDTO);
+        listaProdutosEntity.add(produtoEntity);
+
+        List<ProductsDTO> gerandoListaProdutoDto = converter.toListDTO(listaProdutosEntity);
+
+        assertEquals(listaProdutosDto, gerandoListaProdutoDto);
+        
+    }
+}
+```
+
+Analisando cada um dos métodos de teste no script `ProdutoConverterTeste`:
+
+1. **`testeConverterParaProdutoEntityComSucesso()`**:
+   - Cria um objeto `ProductsDTO` e um objeto `ProdutoEntity` esperado.
+   - Chama o método `toEntity` do `ProdutoConverter` para converter o `ProductsDTO` em `ProdutoEntity`.
+   - Utiliza asserções para verificar se os atributos dos objetos convertidos correspondem aos esperados.
+   - Verifica se o ID e a data de inclusão no `ProdutoEntity` foram gerados.
+
+2. **`testeConverterParaProdutoEntityUpdateComSucesso()`**:
+   - Cria um objeto `ProductsDTO`, um objeto `ProdutoEntity` esperado e um objeto `ProdutoEntity` existente.
+   - Chama o método `toEntityUpdate` do `ProdutoConverter` para realizar uma atualização.
+   - Utiliza asserções para verificar se os atributos dos objetos convertidos correspondem aos esperados após a atualização.
+   - Verifica se o ID, a data de inclusão e a data de atualização foram mantidos.
+
+3. **`testeConverterParaProdutoDtoComSucesso()`**:
+   - Cria um objeto `ProdutoEntity` e um objeto `ProductsDTO` esperado.
+   - Chama o método `toDTO` do `ProdutoConverter` para converter o `ProdutoEntity` em `ProductsDTO`.
+   - Utiliza asserções para verificar se os atributos dos objetos convertidos correspondem aos esperados.
+   - Verifica se o ID no `ProductsDTO` é nulo, pois não deve ser transferido.
+
+4. **`testeConverterParaListaProdutoDtoComSucesso()`**:
+   - Cria uma lista de `ProductsDTO` e uma lista de `ProdutoEntity`, adiciona um elemento a cada lista.
+   - Chama o método `toListDTO` do `ProdutoConverter` para converter a lista de `ProdutoEntity` em uma lista de `ProductsDTO`.
+   - Utiliza uma asserção para verificar se as listas convertidas são iguais.
+
+Em resumo, esses testes garantem que as operações de conversão no `ProdutoConverter` funcionem conforme o esperado, cobrindo cenários como criação de entidade, atualização de entidade, conversão para DTO e conversão de lista de entidades para lista de DTO. As asserções são usadas para verificar se os resultados da conversão são consistentes com as expectativas definidas nos objetos esperados.
+
+---
 # Autor
 ## Feito por: `Daniel Penelva de Andrade`
