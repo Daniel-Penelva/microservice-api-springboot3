@@ -1014,5 +1014,89 @@ Em resumo, esses testes garantem que as operações de conversão no `ProdutoCon
 Essencialmente, esses métodos de teste são usados para garantir que a classe `FakeApiService` funciona conforme esperado em diferentes cenários. Eles são uma parte importante da prática de Desenvolvimento Orientado a Testes (TDD) e ajudam a garantir que o código seja robusto e confiável.
 
 ---
+
+# classe de Teste `FakeApiConsumerTest`
+
+```java
+package com.microservice.fakeapi.infraestructure.consumer;
+
+import com.microservice.fakeapi.apiv1.dto.ProductsDTO;
+import com.microservice.fakeapi.business.service.ProdutoService;
+import com.microservice.fakeapi.infraestructure.exceptions.BusinessException;
+import com.microservice.fakeapi.infraestructure.message.consumer.FakeApiConsumer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.math.BigDecimal;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+public class FakeApiConsumerTest {
+
+    @InjectMocks
+    FakeApiConsumer consumer;
+
+    @Mock
+    ProdutoService service;
+
+    @Test
+    void testeReceberMensagemProdutoDTOComSucesso(){
+        ProductsDTO produtoDTO = ProductsDTO.builder().descricao("Jaqueta Vermelha com bolsos laterais e Listras").preco(new BigDecimal(250.00)).build();
+
+        doNothing().when(service).salvaProdutoConsumer(produtoDTO);
+
+        consumer.recebeProdutosDTO(produtoDTO);
+
+        verify(service).salvaProdutoConsumer(produtoDTO);
+        verifyNoMoreInteractions(service);
+    }
+
+    @Test
+    void testeGerarExceptionCasoErroNoConsumer(){
+        ProductsDTO produtoDTO = ProductsDTO.builder().descricao("Jaqueta Vermelha com bolsos laterais e Listras").preco(new BigDecimal(250.00)).build();
+
+        doThrow(new RuntimeException("Erro ao consumir mensagem")).when(service).salvaProdutoConsumer(produtoDTO);
+
+        BusinessException e = assertThrows(BusinessException.class, () -> consumer.recebeProdutosDTO(produtoDTO));
+
+        assertThat(e.getMessage(), is("Erro ao consumir mensagem do kafka "));
+        verify(service).salvaProdutoConsumer(produtoDTO);
+        verifyNoMoreInteractions(service);
+    }
+}
+
+```
+Analisando os métodos de testes passo a passo:
+
+
+1. **Método `testeReceberMensagemProdutoDTOComSucesso()`:**
+
+   - É criado um objeto `ProductsDTO` usando o padrão de construção do `builder`. Este objeto será utilizado como entrada para o método de teste.
+   - Usa o método `doNothing()` para configurar o comportamento do mock `service`. Isso significa que quando o método `salvaProdutoConsumer` do `service` for chamado com o objeto `produtoDTO`, nenhum efeito será produzido.
+   - Chama o método sob teste `recebeProdutosDTO` do objeto `consumer`, passando o objeto `produtoDTO` como argumento.
+   - Usa o método `verify` para verificar se o método `salvaProdutoConsumer` do mock `service` foi chamado exatamente uma vez com o argumento `produtoDTO`. Isso garante que a interação esperada ocorreu.
+   - Usa o método `verifyNoMoreInteractions` para garantir que não houve mais interações com o mock `service` além daquelas verificadas. Isso é útil para assegurar que apenas as interações esperadas foram realizadas.
+
+Em resumo, esse método de teste verifica se o consumidor (`consumer`) interage corretamente com o serviço (`service`). Ele valida se, ao receber um objeto `ProductsDTO`, o método `salvaProdutoConsumer` do serviço é chamado corretamente, e não há outras interações não esperadas com o serviço. Esse tipo de teste é importante para garantir o comportamento adequado do consumidor em relação ao serviço durante a execução.
+
+2. **Método `testeGerarExceptionCasoErroNoConsumer()`:**
+
+   - É criado um objeto `ProductsDTO` usando o padrão de construção do `builder`. Este objeto será utilizado como entrada para o método de teste.
+   - Usa o método `doThrow` para configurar o comportamento do mock `service`. Isso significa que quando o método `salvaProdutoConsumer` do `service` for chamado com o objeto `produtoDTO`, uma exceção do tipo `RuntimeException` com a mensagem "Erro ao consumir mensagem" será lançada.
+   - Usa o método `assertThrows` para verificar se a chamada do método `recebeProdutosDTO` do objeto `consumer` resulta na exceção esperada (`BusinessException`). A exceção lançada é então atribuída à variável `e`.
+   - Usa o método `assertThat` para verificar se a mensagem da exceção (`e.getMessage()`) é igual a "Erro ao consumir mensagem do kafka ". Isso é útil para garantir que a exceção gerada tem a mensagem esperada.
+   - Usa o método `verify` para verificar se o método `salvaProdutoConsumer` do mock `service` foi chamado exatamente uma vez com o argumento `produtoDTO`. Isso garante que a interação esperada ocorreu.
+   - Usa o método `verifyNoMoreInteractions` para garantir que não houve mais interações com o mock `service` além daquelas verificadas. Isso é útil para assegurar que apenas as interações esperadas foram realizadas.
+
+Em resumo, esse método de teste verifica se o consumidor (`consumer`) lida corretamente com uma situação em que o serviço (`service`) lança uma exceção durante a execução. Ele valida se a exceção gerada é a esperada (`BusinessException`) e se as interações com o serviço ocorrem conforme o esperado. Esse tipo de teste é importante para garantir que o consumidor se comporte corretamente em resposta a falhas no serviço.
+
+---
 # Autor
 ## Feito por: `Daniel Penelva de Andrade`
