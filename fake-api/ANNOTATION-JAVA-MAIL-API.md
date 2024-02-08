@@ -295,6 +295,99 @@ Para usar este serviço, é necessário configurar corretamente as propriedades 
 - Certifique-se de que as dependências necessárias, como `JavaMailSender`, estejam corretamente configuradas no projeto.
 - Verifique se as configurações do servidor SMTP estão corretas para garantir que os e-mails sejam entregues corretamente.
 
+
+# Anotação `@NotificacaoErro`
+
+## Descrição
+Esta anotação é utilizada para marcar métodos ou classes que requerem notificação de erros. Ao marcar um método ou uma classe com `@NotificacaoErro` está indicando que deseja receber notificações em caso de ocorrência de erros durante a execução.
+
+```java
+package com.microservice.fakeapi.infraestructure.config.error;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD, ElementType.TYPE})
+public @interface NotificacaoErro {
+}
+```
+
+## Características Principais
+
+1. **Identificação de Pontos de Notificação**: A anotação `@NotificacaoErro` pode ser aplicada a métodos e classes para identificar os pontos no código onde as notificações de erro são desejadas.
+
+2. **Runtime Retention**: A anotação é retida em tempo de execução, o que significa que ela estará disponível durante a execução do programa, permitindo que as informações sobre as notificações de erro sejam acessadas e processadas dinamicamente.
+
+## Uso
+Para utilizar esta anotação, basta aplicá-la a métodos ou classes onde você deseja receber notificações de erros.
+
+## Considerações
+- A anotação `@NotificacaoErro` serve como um marcador para indicar pontos no código onde notificações de erro são necessárias. A implementação da lógica de notificação de erro deve ser feita separadamente.
+- Esta anotação pode ser útil em sistemas onde é necessário monitorar determinados pontos no código e ser notificado sobre erros específicos que ocorrem durante a execução.
+
+
+# Aspecto de Notificação de Erro (NotificaçãoErroAspect)
+
+## Descrição
+Este aspecto (`NotificacaoErroAspect`) é responsável por interceptar exceções lançadas em métodos ou classes marcadas com a anotação `@NotificacaoErro` e enviar notificações de erro por e-mail utilizando o serviço de e-mail fornecido (`EmailService`).
+
+```java
+package com.microservice.fakeapi.infraestructure.config.error;
+
+import com.microservice.fakeapi.business.service.EmailService;
+import lombok.RequiredArgsConstructor;
+import org.aspectj.lang.annotation.AfterThrowing;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.stereotype.Component;
+
+@Component
+@Aspect
+@RequiredArgsConstructor
+public class NotificacaoErroAspect {
+
+    private EmailService emailService;
+
+    @Pointcut("@within(com.microservice.fakeapi.infraestructure.config.error.NotificacaoErro) || @annotation(com.microservice.fakeapi.infraestructure.config.error.NotificacaoErro)")
+    public void notificacaoErroPointCut() {};
+
+    @AfterThrowing(pointcut = "notificacaoErroPointCut()", throwing = "e")
+    public void notificacaoErro(final Exception e){
+        emailService.enviaEmailExcecao(e);
+    }
+}
+```
+
+## Características Principais
+
+1. **Interceptação de Exceções**: O aspecto `NotificacaoErroAspect` intercepta exceções lançadas em métodos ou classes marcadas com a anotação `@NotificacaoErro`.
+
+2. **Envio de Notificações por E-mail**: Quando uma exceção é interceptada, o aspecto chama o método `enviaEmailExcecao` do serviço de e-mail (`EmailService`) para enviar uma notificação por e-mail sobre a exceção ocorrida.
+
+## Anotações Utilizadas
+
+- `@Component`: Esta anotação marca a classe como um componente gerenciado pelo Spring, permitindo que seja detectada automaticamente pelo mecanismo de varredura de componentes.
+
+- `@Aspect`: Esta anotação marca a classe como um aspecto, indicando que ela contém métodos de corte e conselhos que serão aplicados a outros componentes.
+
+- `@RequiredArgsConstructor`: Esta anotação do Lombok gera um construtor que injeta automaticamente os campos marcados como `final` pelo construtor.
+
+## Métodos Principais
+
+1. **`notificacaoErroPointCut()`**: Este método é um ponto de corte que define os locais no código onde o aspecto deve ser aplicado. Ele seleciona todos os métodos ou classes que são anotados com `@NotificacaoErro`.
+
+2. **`notificacaoErro(Exception e)`**: Este método é um conselho do tipo `@AfterThrowing`, que é executado após uma exceção ser lançada em qualquer ponto de corte definido pelo método `notificacaoErroPointCut()`. Ele chama o método `enviaEmailExcecao` do serviço de e-mail para enviar uma notificação sobre a exceção ocorrida.
+
+## Uso
+Para usar este aspecto, basta adicionar a anotação `@NotificacaoErro` aos métodos ou classes onde você deseja receber notificações de erros por e-mail.
+
+## Considerações
+- Esta abordagem pode ser útil para lidar com exceções em uma aplicação e garantir que a equipe seja notificada imediatamente sobre erros críticos que ocorram em produção.
+
+
 ---
 # Autor
 ## Feito por: `Daniel Penelva de Andrade`
