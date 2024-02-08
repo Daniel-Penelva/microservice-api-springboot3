@@ -16,6 +16,25 @@ spring:
     loadbalancer:
       ribbon:
         enable: true
+  mail:
+    host: smtp.gmail.com                             # O endereço do servidor SMTP do Gmail, que é smtp.gmail.com.
+    port: 587                                        # A porta utilizada para comunicação com o servidor SMTP do Gmail. No caso do Gmail, a porta padrão é 587
+    username: testeaplicacao14@gmail.com             # O nome de usuário da conta do Gmail que será usada para enviar os e-mails.
+    password: zznq kvkd ugsa kjdj                    # A senha da conta do Gmail correspondente ao nome de usuário fornecido.
+    protocol: smtp                                   # O protocolo a ser usado para comunicação com o servidor SMTP, que é smtp (Simple Mail Transfer Protocol).
+    properties:                                      # Propriedades adicionais específicas para a configuração do envio de e-mails.
+      mail:                                          # Propriedades relacionadas ao envio de e-mails.
+        smtp:                                        # Propriedades específicas do protocolo SMTP.
+          socketFactory:                             # Configurações relacionadas ao uso de um SocketFactory para criar sockets SSL.
+            port: 465                                # A porta a ser usada para comunicação segura. No caso do Gmail, a porta SSL é 465.
+            class: javax.net.ssl.SSLSocketFactory    # A classe a ser usada para criar o SSLSocketFactory.
+            fallback: false                          # Se true, o socket criado tentará usar primeiro a porta especificada para SSL e, se não for possível, tentará usar a porta padrão. No entanto, o false está configurado, o que significa que não haverá fallback.
+          auth: true                                 # Se true, autenticação será realizada ao se conectar ao servidor SMTP.
+          starttls:                                  # Configurações relacionadas ao STARTTLS, que é um comando usado para iniciar uma sessão TLS segura.
+            enable: true                             # Se true, o cliente tentará iniciar uma sessão TLS ao se conectar ao servidor SMTP.
+          connectiontimeout: 5000                    # O tempo limite (em milissegundos) para estabelecer uma conexão com o servidor SMTP. No exemplo, é 5000 milissegundos (ou seja, 5 segundos).
+          timeout: 3000                              # O tempo limite (em milissegundos) para leitura de dados do servidor SMTP. No exemplo, é 3000 milissegundos (ou seja, 3 segundos).
+          writetimeout: 5000                         # O tempo limite (em milissegundos) para escrever dados para o servidor SMTP. No exemplo, é 5000 milissegundos (ou seja, 5 segundos).
 
 topico:
   fake-api:
@@ -27,3 +46,8 @@ topico:
 
 server:
   port: 8181
+
+send:                                               # É uma seção ou chave que agrupa configurações relacionadas ao envio de e-mails.
+  mail:                                             # Especifica-se o conteúdo do e-mail.
+    to: testeaplicacao14@gmail.com                  # O endereço de e-mail do destinatário do e-mail. No exemplo fornecido, é testeaplicacao14@gmail.com. Isso significa que o e-mail será enviado para este endereço.
+    from: testeaplicacao14@gmail.com                # O endereço de e-mail do remetente do e-mail. No exemplo, é testeaplicacao14@gmail.com. Isso indica que o e-mail será enviado por este endereço.
